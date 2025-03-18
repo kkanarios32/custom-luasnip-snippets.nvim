@@ -38,7 +38,11 @@ local frac_node = {
     if depth ~= 0 then
       return string.format("%s\\frac{}", stripped)
     else
-      return string.format("%s\\frac{%s}", stripped:sub(1, i - 1), stripped:sub(i + 1, #stripped - 1))
+      return string.format(
+        "%s\\frac{%s}",
+        stripped:sub(1, i - 1),
+        stripped:sub(i + 1, #stripped - 1)
+      )
     end
   end, {}),
   t("{"),
@@ -63,7 +67,7 @@ local frac_no_parens_triggers = {
 }
 
 function M.retrieve(is_math)
-  local utils = require("luasnip-latex-snippets.util.utils")
+  local utils = require("custom-luasnip-snippets.util.utils")
   local pipe = utils.pipe
 
   local s = ls.extend_decorator.apply(ls.snippet, {

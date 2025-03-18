@@ -4,7 +4,7 @@ local ls = require("luasnip")
 local f = ls.function_node
 
 function M.retrieve(is_math)
-  local utils = require("luasnip-latex-snippets.util.utils")
+  local utils = require("custom-luasnip-snippets.util.utils")
   local pipe, no_backslash = utils.pipe, utils.no_backslash
 
   local decorator = {
@@ -50,6 +50,18 @@ function M.retrieve(is_math)
       },
       f(function(_, snip)
         return string.format("\\dot{%s}", snip.captures[1])
+      end, {})
+    ),
+    s(
+      {
+        trig = "(%a)bf",
+        wordTrig = false,
+        regTrig = true,
+        name = "bf",
+        priority = 100,
+      },
+      f(function(_, snip)
+        return string.format("\\mathbf{%s}", snip.captures[1])
       end, {})
     ),
 
@@ -115,7 +127,7 @@ function M.retrieve(is_math)
     parse_snippet({ trig = "...", name = "ldots", priority = 100 }, "\\ldots "),
     parse_snippet({ trig = "!>", name = "mapsto" }, "\\mapsto "),
     parse_snippet({ trig = "iff", name = "iff" }, "\\iff"),
-    parse_snippet({ trig = "siff", name = "short iff", priority = 100}, "\\Leftrightarrow"),
+    parse_snippet({ trig = "siff", name = "short iff", priority = 100 }, "\\Leftrightarrow"),
     parse_snippet({ trig = "ooo", name = "\\infty" }, "\\infty"),
     parse_snippet({ trig = "rij", name = "mrij" }, "(${1:x}_${2:n})_{${3:$2}\\in${4:\\N}}$0"),
     parse_snippet({ trig = "nabl", name = "nabla" }, "\\nabla "),

@@ -1,7 +1,7 @@
 local M = {}
 
 local ls = require("luasnip")
-local utils = require("luasnip-latex-snippets.util.utils")
+local utils = require("custom-luasnip-snippets.util.utils")
 local pipe = utils.pipe
 
 function M.retrieve(is_math)

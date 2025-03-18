@@ -19,7 +19,7 @@ M.math_wrA_no_backslash = {
 M.decorator = {}
 
 function M.retrieve(is_math)
-  local utils = require("luasnip-latex-snippets.util.utils")
+  local utils = require("custom-luasnip-snippets.util.utils")
   local pipe = utils.pipe
   local no_backslash = utils.no_backslash
 

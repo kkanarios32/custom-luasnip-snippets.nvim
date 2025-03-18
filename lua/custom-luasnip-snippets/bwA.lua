@@ -5,7 +5,7 @@ local i = ls.insert_node
 local M = {}
 
 function M.retrieve(not_math)
-  local utils = require("luasnip-latex-snippets.util.utils")
+  local utils = require("custom-luasnip-snippets.util.utils")
   local pipe = utils.pipe
 
   local conds = require("luasnip.extras.expand_conditions")

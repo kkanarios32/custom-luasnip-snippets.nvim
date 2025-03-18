@@ -29,7 +29,7 @@ M.no_backslash = function(line_to_cursor, matched_trigger)
   return not line_to_cursor:find("\\%a+$", -#line_to_cursor)
 end
 
-local ts_utils = require("luasnip-latex-snippets.util.ts_utils")
+local ts_utils = require("custom-luasnip-snippets.util.ts_utils")
 M.is_math = function(treesitter)
   if treesitter then
     return ts_utils.in_mathzone()
@@ -51,8 +51,16 @@ M.comment = function()
 end
 
 M.env = function(name)
-  local x, y = unpack(vim.fn["vimtex#env#is_inside"](name))
-  return x ~= "0" and y ~= "0"
+  local is_inside = vim.fn["vimtex#env#is_inside"](name)
+  return (is_inside[1] > 0 and is_inside[2] > 0)
+end
+
+function M.in_bullets()
+  return M.env("itemize") or M.env("enumerate") or M.env("description")
+end
+
+function M.not_in_bullets()
+  return not M.in_bullets()
 end
 
 M.with_priority = function(snip, priority)
@@ -64,6 +72,38 @@ M.with_opts = function(fn, opts)
   return function()
     return fn(opts)
   end
+end
+
+M.anki_in_latex_env = function()
+  -- Get current cursor position: row (1-indexed) and column (0-indexed)
+  local pos = vim.api.nvim_win_get_cursor(0)
+  local current_row = pos[1]
+  local current_col = pos[2] + 1 -- adjust because Lua strings are 1-indexed
+
+  local count = 0
+
+  -- Get all lines before the current line.
+  local lines = vim.api.nvim_buf_get_lines(0, 0, current_row - 1, false)
+  for _, line in ipairs(lines) do
+    for _ in line:gmatch("%[latex%]") do
+      count = count + 1
+    end
+    for _ in line:gmatch("%[/latex%]") do
+      count = count - 1
+    end
+  end
+
+  -- For the current line, only count markers up to the cursor column.
+  local current_line = vim.api.nvim_get_current_line()
+  local sub_line = current_line:sub(1, current_col)
+  for _ in sub_line:gmatch("%[latex%]") do
+    count = count + 1
+  end
+  for _ in sub_line:gmatch("%[/latex%]") do
+    count = count - 1
+  end
+
+  return count > 0
 end
 
 return M

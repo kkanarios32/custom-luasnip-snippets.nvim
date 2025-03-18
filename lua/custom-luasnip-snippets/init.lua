@@ -224,18 +224,16 @@ M.setup_anki = function()
     })
   end
 
-  ls.add_snippets(
-    "anki",
+  ls.add_snippets("anki", {
     s("mk", {
       t({ "[latex]", "" }),
       i(1),
       t({ "", "[/latex]" }),
     }),
-    {
-      type = "autosnippets",
-      default_priority = 0,
-    }
-  )
+  }, {
+    type = "autosnippets",
+    default_priority = 1,
+  })
 end
 
 return M

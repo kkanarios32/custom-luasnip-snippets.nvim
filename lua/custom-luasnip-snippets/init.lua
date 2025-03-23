@@ -104,8 +104,25 @@ M.setup_forester = function()
   local pipe = latex_utils.pipe
   local utils = require("custom-luasnip-snippets.util.forester_utils")
 
+  local math_i = require("custom-luasnip-snippets/math_i").retrieve(utils.in_mathzone)
+  local math_iA = require("custom-luasnip-snippets/math_iA").retrieve(utils.in_mathzone)
+  local math_iAn =
+    require("custom-luasnip-snippets/math_iA_no_backslash").retrieve(utils.in_mathzone)
+
+  ls.add_snippets("forester", math_i, {
+    type = "autosnippets",
+    default_priority = 0,
+  })
+  ls.add_snippets("forester", math_iA, {
+    type = "autosnippets",
+    default_priority = 0,
+  })
+  ls.add_snippets("forester", math_iAn, {
+    type = "autosnippets",
+    default_priority = 0,
+  })
+
   -- local conds = require("luasnip.extras.expand_conditions")
-  local condition = pipe({ utils.in_mathzone })
 
   ls.add_snippets("forester", {
     s("\\ul", { t({ "\\ul{", "  " }), i(1), t({ "", "}" }) }),
@@ -116,18 +133,29 @@ M.setup_forester = function()
       condition = pipe({ utils.not_in_mathzone, utils.in_list }),
     }, { t("\\li{"), i(1), t("}") }),
     s("\\p", { t("\\p{"), i(1), t("}") }),
+    s("\\sec", { t("\\section{"), i(1), t("}"), t("{"), i(2), t("}") }),
+    s("prf", { t("\\proof{"), i(1), t("}") }),
     s("\\au", { t("\\author{kellenkanarios}") }),
     s("\\ba", { t("\\import{base-macros}") }),
     s("\\ti", { t("\\title{"), i(1), t("}") }),
-    s(
-      { trig = "mk", snippetType = "autosnippet", condition = not_in_mathzone },
-      { t("#{"), i(1), t("}") }
-    ),
-    s(
-      { trig = "dm", snippetType = "autosnippet", condition = not_in_mathzone },
-      { t("##{"), i(1), t("}") }
-    ),
-    s({ trig = "ali", snippetType = "autosnippet", condition = condition }, {
+    s({
+      trig = "mk",
+      snippetType = "autosnippet",
+      show_condition = utils.not_in_mathzone,
+      condition = utils.not_in_mathzone,
+    }, { t("#{"), i(1), t("}") }),
+    s({
+      trig = "dm",
+      snippetType = "autosnippet",
+      show_condition = utils.not_in_mathzone,
+      condition = utils.not_in_mathzone,
+    }, { t("##{"), i(1), t("}") }),
+    s({
+      trig = "ali",
+      snippetType = "autosnippet",
+      show_condition = utils.in_mathzone,
+      condition = utils.in_mathzone,
+    }, {
       t({ "\\begin{align*}", "" }),
       i(1),
       t({ "", "\\end{align*}" }),

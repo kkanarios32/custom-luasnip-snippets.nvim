@@ -9,34 +9,45 @@ M.setup = function(opts)
   opts = vim.tbl_deep_extend("force", default_opts, opts or {})
 
   local augroup = vim.api.nvim_create_augroup("custom-luasnip-snippets", {})
-  -- vim.api.nvim_create_autocmd("FileType", {
-  --   pattern = "tex",
-  --   group = augroup,
-  --   once = true,
-  --   callback = function()
-  --     local utils = require("custom-luasnip-snippets.util.utils")
-  --     local is_math = utils.with_opts(utils.is_math, opts.use_treesitter)
-  --     local not_math = utils.with_opts(utils.not_math, opts.use_treesitter)
-  --     M.setup_tex(is_math, not_math)
-  --   end,
-  -- })
-  local utils = require("custom-luasnip-snippets.util.utils")
-  local is_math = utils.with_opts(utils.is_math, opts.use_treesitter)
-  local not_math = utils.with_opts(utils.not_math, opts.use_treesitter)
-  M.setup_tex(is_math, not_math)
-  M.setup_anki()
-  M.setup_forester()
 
-  if opts.allow_on_markdown then
-    vim.api.nvim_create_autocmd("FileType", {
-      pattern = "markdown",
-      group = augroup,
-      once = true,
-      callback = function()
-        M.setup_markdown()
-      end,
-    })
-  end
+  vim.api.nvim_create_autocmd("FileType", {
+    pattern = "tex",
+    group = augroup,
+    once = true,
+    callback = function()
+      local utils = require("custom-luasnip-snippets.util.utils")
+      local is_math = utils.with_opts(utils.is_math, opts.use_treesitter)
+      local not_math = utils.with_opts(utils.not_math, opts.use_treesitter)
+      M.setup_tex(is_math, not_math)
+    end,
+  })
+
+  vim.api.nvim_create_autocmd("FileType", {
+    pattern = "anki",
+    group = augroup,
+    once = true,
+    callback = function()
+      M.setup_anki()
+    end,
+  })
+
+  vim.api.nvim_create_autocmd("FileType", {
+    pattern = "forester",
+    group = augroup,
+    once = true,
+    callback = function()
+      M.setup_forester()
+    end,
+  })
+
+  vim.api.nvim_create_autocmd("FileType", {
+    pattern = "markdown",
+    group = augroup,
+    once = true,
+    callback = function()
+      M.setup_markdown()
+    end,
+  })
 end
 
 local _autosnippets = function(is_math, not_math)
@@ -99,45 +110,95 @@ M.setup_forester = function()
   local s = ls.snippet
   local t = ls.text_node
   local i = ls.insert_node
+  local f = ls.function_node
 
   local latex_utils = require("custom-luasnip-snippets.util.utils")
   local pipe = latex_utils.pipe
   local utils = require("custom-luasnip-snippets.util.forester_utils")
 
-  local math_i = require("custom-luasnip-snippets/math_i").retrieve(utils.in_mathzone)
-  local math_iA = require("custom-luasnip-snippets/math_iA").retrieve(utils.in_mathzone)
-  local math_iAn =
-    require("custom-luasnip-snippets/math_iA_no_backslash").retrieve(utils.in_mathzone)
+  local latex_math = {}
 
-  ls.add_snippets("forester", math_i, {
-    type = "autosnippets",
-    default_priority = 0,
-  })
-  ls.add_snippets("forester", math_iA, {
-    type = "autosnippets",
-    default_priority = 0,
-  })
-  ls.add_snippets("forester", math_iAn, {
+  for _, s in ipairs({
+    "math_wRA_no_backslash",
+    "math_rA_no_backslash",
+    "math_wA_no_backslash",
+    "math_iA_no_backslash",
+    "math_iA",
+    "math_i",
+    "math_wrA",
+  }) do
+    vim.list_extend(
+      latex_math,
+      require(("custom-luasnip-snippets.%s"):format(s)).retrieve(utils.in_mathzone)
+    )
+  end
+
+  ls.add_snippets("forester", latex_math, {
     type = "autosnippets",
     default_priority = 0,
   })
 
-  -- local conds = require("luasnip.extras.expand_conditions")
+  local conds = require("luasnip.extras.expand_conditions")
 
   ls.add_snippets("forester", {
+    s({
+      trig = "img",
+      snippetType = "autosnippet",
+      condition = conds.line_begin,
+    }, {
+      t({ "\\figure{", "" }),
+      t("\\<html:img>[width]{"),
+      i(1),
+      t("}"),
+      t("[src]{"),
+      i(2),
+      t({ "}{}", "" }),
+      t("\\figcaption{"),
+      i(3),
+      t({ "}", "" }),
+      t("}"),
+    }),
     s("\\ul", { t({ "\\ul{", "  " }), i(1), t({ "", "}" }) }),
     s("\\ol", { t({ "\\ol{", "  " }), i(1), t({ "", "}" }) }),
     s({
       trig = "--",
       snippetType = "autosnippet",
+      show_condition = pipe({ utils.not_in_mathzone, utils.in_list }),
       condition = pipe({ utils.not_in_mathzone, utils.in_list }),
     }, { t("\\li{"), i(1), t("}") }),
-    s("\\p", { t("\\p{"), i(1), t("}") }),
-    s("\\sec", { t("\\section{"), i(1), t("}"), t("{"), i(2), t("}") }),
-    s("prf", { t("\\proof{"), i(1), t("}") }),
+    s({ trig = "\\p", condition = utils.not_in_mathzone }, { t("\\p{"), i(1), t("}") }),
+    s("\\sec", { t("\\section{"), i(1), t("}"), t({ "{", "" }), i(2), t({ "", "}" }) }),
+    s("\\rem", { t({ "\\remark{", "" }), i(1), t({ "", "}" }) }),
+    s("\\pf", { t({ "\\proof{", "" }), i(1), t({ "", "}" }) }),
+    s("\\ex", { t({ "\\example{", "" }), i(1), t({ "", "}" }) }),
     s("\\au", { t("\\author{kellenkanarios}") }),
     s("\\ba", { t("\\import{base-macros}") }),
     s("\\ti", { t("\\title{"), i(1), t("}") }),
+    s("\\lk", { t("["), i(1), t("]"), t("("), i(2), t(")") }),
+    s({
+      trig = "[)",
+      name = "clopen",
+      priority = 100,
+    }, {
+      t("\\closed-open{"),
+      i(1),
+      t("}"),
+    }),
+    s({
+      trig = "[)",
+      name = "opencl",
+      priority = 100,
+    }, {
+      t("\\open-closed{"),
+      i(1),
+      t("}"),
+    }),
+    s({
+      trig = "ali",
+      name = "Align",
+      show_condition = utils.in_mathzone,
+      condition = utils.in_mathzone,
+    }, { t({ "\\begin{align*}", "\t" }), i(1), t({ "", ".\\end{align*}" }) }),
     s({
       trig = "mk",
       snippetType = "autosnippet",
@@ -150,21 +211,6 @@ M.setup_forester = function()
       show_condition = utils.not_in_mathzone,
       condition = utils.not_in_mathzone,
     }, { t("##{"), i(1), t("}") }),
-    s({
-      trig = "ali",
-      snippetType = "autosnippet",
-      show_condition = utils.in_mathzone,
-      condition = utils.in_mathzone,
-    }, {
-      t({ "\\begin{align*}", "" }),
-      i(1),
-      t({ "", "\\end{align*}" }),
-    }, {}),
-    s("\\eq", {
-      t({ "\\begin{equation}", "" }),
-      i(1),
-      t({ "", "\\end{equation}" }),
-    }),
   }, {
     type = "autosnippets",
     key = "forester_auto",

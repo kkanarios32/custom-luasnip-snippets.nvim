@@ -142,6 +142,15 @@ M.setup_forester = function()
 
   ls.add_snippets("forester", {
     s({
+      trig = "\\verb",
+      snippetType = "autosnippet",
+      condition = conds.line_begin,
+    }, {
+      t({ "\\pre\\verb<<<|", "" }),
+      i(1),
+      t({ "", "<<<" }),
+    }),
+    s({
       trig = "img",
       snippetType = "autosnippet",
       condition = conds.line_begin,
@@ -167,6 +176,8 @@ M.setup_forester = function()
       condition = pipe({ utils.not_in_mathzone, utils.in_list }),
     }, { t("\\li{"), i(1), t("}") }),
     s({ trig = "\\p", condition = utils.not_in_mathzone }, { t("\\p{"), i(1), t("}") }),
+    s("\\str", { t("\\strong{"), i(1), t("}") }),
+    s("\\em", { t("\\em{"), i(1), t("}") }),
     s("\\sec", { t("\\section{"), i(1), t("}"), t({ "{", "" }), i(2), t({ "", "}" }) }),
     s("\\rem", { t({ "\\remark{", "" }), i(1), t({ "", "}" }) }),
     s("\\pf", { t({ "\\proof{", "" }), i(1), t({ "", "}" }) }),
